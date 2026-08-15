@@ -1,0 +1,875 @@
+---
+description: ContentOps Agent 프로젝트의 개발, RAG 평가, Agent 실험 및 문서 관리 규칙
+globs:
+alwaysApply: true
+---
+
+# ContentOps Agent Project Rule
+
+## 1. 역할
+
+이 프로젝트는 OTT 콘텐츠 운영자를 위한 RAG + Agent 시스템을 구현하고 평가하는 프로젝트다.
+
+AI Coding Assistant의 역할은 다음과 같다.
+
+- 현재 요구사항을 코드로 구현한다.
+- 테스트와 Evaluation 실행을 보조한다.
+- 실패 Case를 분석한다.
+- 가능한 개선 후보를 제시한다.
+- Experiment 문서 작성을 보조한다.
+
+AI는 다음 결정을 임의로 내리지 않는다.
+
+- Retrieval 전략 변경
+- Chunking 전략 변경
+- Keyword Search 도입
+- Hybrid Search 도입
+- RRF 도입
+- Reranker 도입
+- Embedding Model 변경
+- LLM Model 변경
+- Prompt의 의미 있는 정책 변경
+- Tool 추가 / 제거
+- Agent Workflow 변경
+- LangGraph 도입
+- Multi-Agent 도입
+- 새로운 Vector Store 도입
+
+위 변경은 측정 결과와 Human Gate를 거친다.
+
+---
+
+# 2. Source of Truth
+
+작업 시작 전에 다음 문서를 확인한다.
+
+```text
+docs/REQUIREMENTS.md
+docs/DESIGN.md
+docs/ROADMAP.md
+docs/TASKS.md
+```
+
+역할은 다음과 같다.
+
+```text
+REQUIREMENTS.md
+→ 무엇을 만족해야 하는가
+
+DESIGN.md
+→ 현재 실제 시스템은 어떻게 동작하는가
+
+ROADMAP.md
+→ 어떤 문제를 어떤 순서로 평가할 것인가
+
+TASKS.md
+→ 현재 Phase에서 무엇을 할 것인가
+```
+
+미래 Phase의 내용을 현재 구현 근거로 사용하지 않는다.
+
+---
+
+# 3. 현재 Phase를 벗어나지 않는다
+
+항상 `ROADMAP.md`에서 현재 Phase를 확인한다.
+
+`TASKS.md`에는 현재 Phase의 작업만 존재해야 한다.
+
+예를 들어 Baseline Phase에서는 다음 기능을 임의로 추가하지 않는다.
+
+```text
+Keyword Search
+Hybrid Search
+RRF
+Reranker
+Query Rewrite
+Multi Query
+Tool Calling
+LangGraph
+Multi-Agent
+Memory
+```
+
+ROADMAP에 존재한다는 이유만으로 미리 구현하지 않는다.
+
+---
+
+# 4. Evaluation이 완료 기준이다
+
+AI 기능은 다음 기준으로 완료했다고 판단하지 않는다.
+
+```text
+코드 작성 완료
+
+테스트 통과
+
+질문 몇 개 실행
+
+그럴듯한 답변 확인
+```
+
+RAG 또는 Agent의 품질과 관련된 Task는 가능한 경우 Evaluation 결과가 있어야 완료된다.
+
+기본 흐름:
+
+```text
+구현
+ ↓
+Evaluation
+ ↓
+실패 Case 확인
+ ↓
+분석
+ ↓
+필요한 경우 개선
+ ↓
+동일 Dataset 재평가
+```
+
+측정하지 않은 품질 개선을 주장하지 않는다.
+
+---
+
+# 5. Evaluation Dataset을 보호한다
+
+Evaluation Dataset은 프로젝트의 핵심 검증 자산이다.
+
+AI는 결과를 좋게 만들기 위해 평가 질문이나 정답을 임의로 변경하지 않는다.
+
+다음 작업은 Human Gate 없이 하지 않는다.
+
+```text
+평가 질문 삭제
+
+Expected Document 변경
+
+Expected Tool 변경
+
+No Answer Query 삭제
+
+평가 기준 완화
+```
+
+구현이 Evaluation에 맞지 않는 경우 기본적으로 구현 또는 설계를 검토한다.
+
+Evaluation Dataset 자체가 잘못되었다고 판단되는 경우 이유를 설명하고 Human Gate에서 멈춘다.
+
+---
+
+# 6. Retrieval과 Generation을 분리해서 분석한다
+
+최종 Answer가 틀렸다고 해서 바로 Prompt를 수정하지 않는다.
+
+먼저 실패 위치를 구분한다.
+
+```text
+Query
+ ↓
+Retrieval
+ ↓
+Context
+ ↓
+Generation
+ ↓
+Answer
+```
+
+다음 기준으로 분석한다.
+
+```text
+정답 Document가 Top K에 없음
+→ Retrieval Failure
+
+정답 Document는 존재하지만 Ranking이 낮음
+→ Ranking Failure
+
+정답 Context가 전달됐지만 Answer가 틀림
+→ Generation Failure
+
+Context에 없는 내용을 생성함
+→ Grounding / Hallucination Failure
+```
+
+실패 원인과 관계없는 계층을 먼저 수정하지 않는다.
+
+---
+
+# 7. 문제를 해결하기 전에 실패 Case를 남긴다
+
+학습 대상으로 정한 문제는 먼저 재현한다.
+
+예:
+
+```text
+Exact Keyword Query 검색 실패
+→ 먼저 Evaluation 결과 기록
+→ 그 뒤 Keyword Search 검토
+```
+
+```text
+정답 문서 Ranking 문제
+→ 먼저 Ranking 기록
+→ 그 뒤 Reranker 검토
+```
+
+```text
+잘못된 Tool 선택
+→ 먼저 Tool Trace 기록
+→ 그 뒤 Routing / Agent 수정
+```
+
+가능하면 문제 재현 상태를 Git Commit으로 남긴다.
+
+---
+
+# 8. 기술 이름을 답으로 사용하지 않는다
+
+다음 표현을 그대로 구현 근거로 사용하지 않는다.
+
+```text
+RAG에서는 Hybrid Search가 좋다.
+
+RRF가 검색 품질을 높인다.
+
+Reranker를 넣으면 더 정확하다.
+
+Agent는 LangGraph로 만드는 것이 좋다.
+
+Vector DB는 전용 DB가 좋다.
+```
+
+모든 기술은 후보로 취급한다.
+
+기본 순서:
+
+```text
+현재 Metric
+ ↓
+실패 Case
+ ↓
+원인 가설
+ ↓
+후보 비교
+ ↓
+Human Gate
+ ↓
+선택
+ ↓
+적용
+ ↓
+동일 Dataset 재평가
+```
+
+---
+
+# 9. Chunking 변경 규칙
+
+Chunk Size, Overlap, Section 기반 Chunking 등의 변경은 Retrieval 결과에 직접 영향을 준다.
+
+Chunking을 변경할 때는 최소한 다음을 기록한다.
+
+```text
+기존 전략
+
+변경 전략
+
+Document Dataset
+
+Evaluation Dataset
+
+Embedding Model
+
+Top K
+
+Hit Rate@K
+
+Recall@K
+
+MRR
+
+실패 Query 변화
+```
+
+Chunking 변경과 Embedding Model 변경을 한 실험에서 동시에 수행하지 않는다.
+
+가능하면 한 번에 하나의 주요 변수를 변경한다.
+
+---
+
+# 10. Retrieval 전략 변경 규칙
+
+Baseline은 Vector Search다.
+
+Keyword Search, Hybrid Search, RRF 등의 도입은 실제 실패 Case가 확인된 이후 검토한다.
+
+예:
+
+```text
+M-03
+OPS-101
+CONTENT_BLOCKED
+
+↓
+
+Vector Search에서 반복 실패
+
+↓
+
+Keyword Search 후보 검토
+```
+
+Hybrid Search를 적용했다고 개선으로 판단하지 않는다.
+
+동일 Dataset으로 재평가한다.
+
+---
+
+# 11. Reranker 규칙
+
+Reranker는 Ranking 문제가 실제로 확인된 경우에만 검토한다.
+
+Reranker를 도입하면 최소한 다음을 비교한다.
+
+```text
+Recall@K
+
+MRR
+
+최종 Context 품질
+
+Reranking Latency
+
+End-to-End Latency
+
+필요한 경우 API / Token 비용
+```
+
+품질 증가보다 Latency 또는 비용 증가가 과도하다면 최종 구조에서 제외할 수 있다.
+
+---
+
+# 12. Prompt 변경 규칙
+
+Prompt 역시 Experiment 대상이다.
+
+Prompt를 감으로 계속 수정하지 않는다.
+
+의미 있는 Prompt 변경은 가능한 한 동일 Evaluation Dataset으로 비교한다.
+
+```text
+Prompt A
+ ↓
+Evaluation
+
+Prompt B
+ ↓
+Evaluation
+```
+
+다음 변경은 특히 결과에 영향을 줄 수 있으므로 기록한다.
+
+```text
+Grounding 규칙
+
+No Answer 처리
+
+Source 출력 규칙
+
+Tool 사용 규칙
+
+Agent 역할 정의
+```
+
+---
+
+# 13. Model 변경 규칙
+
+Embedding Model 또는 LLM Model을 변경하면 기존 실험과 조건이 달라진다.
+
+변경 시 다음을 기록한다.
+
+```text
+Model 이름
+
+기존 Model
+
+변경 이유
+
+Embedding Dimension 또는 주요 설정
+
+Latency
+
+Token / 비용
+
+Evaluation 결과
+```
+
+Model 변경 결과를 이전 실험과 직접 비교할 때 조건 차이를 명시한다.
+
+---
+
+# 14. Agent는 필요해진 뒤 추가한다
+
+Baseline에서는 Agent를 구현하지 않는다.
+
+먼저 Document RAG를 완성하고 Retrieval / Generation 문제를 평가한다.
+
+콘텐츠 DB 조회 요구가 시작되면 Tool을 추가한다.
+
+최소 Tool 후보:
+
+```text
+search_policy_documents
+
+search_contents
+
+get_content_detail
+```
+
+단순 Tool Calling으로 요구사항을 만족할 수 있다면 복잡한 Agent Workflow를 만들지 않는다.
+
+---
+
+# 15. LangGraph는 정답이 아니다
+
+LangGraph는 상태 기반 Workflow가 실제로 필요할 때 검토한다.
+
+예:
+
+```text
+Question
+ ↓
+Tool 선택
+ ↓
+Tool 실행
+ ↓
+결과 충분?
+ ├─ YES → Answer
+ └─ NO  → 추가 Tool
+```
+
+단순한 Function / Tool Calling으로 충분하다면 LangGraph를 도입하지 않아도 된다.
+
+LangGraph 도입 자체를 프로젝트 성과로 판단하지 않는다.
+
+---
+
+# 16. Multi-Agent를 기본값으로 사용하지 않는다
+
+다음 구조를 처음부터 만들지 않는다.
+
+```text
+Planner Agent
+Search Agent
+SQL Agent
+Reviewer Agent
+Answer Agent
+```
+
+하나의 Agent Workflow로 해결하기 어려운 실제 문제가 확인된 경우에만 역할 분리를 검토한다.
+
+Graph의 복잡성이 해결하려는 문제보다 커지지 않도록 한다.
+
+---
+
+# 17. Tool 선택을 평가한다
+
+Agent 단계에서는 최종 Answer만 평가하지 않는다.
+
+다음을 기록할 수 있어야 한다.
+
+```text
+Question
+
+Expected Tool
+
+Actual Tool
+
+Tool 호출 순서
+
+불필요한 Tool 호출
+
+Tool Result
+```
+
+가능하면 다음 Metric을 사용한다.
+
+```text
+Tool Selection Accuracy
+```
+
+정답을 우연히 만들었더라도 잘못된 Tool을 반복 호출했다면 Agent 품질 문제로 기록한다.
+
+---
+
+# 18. No Answer를 실패로 보지 않는다
+
+내부 문서나 콘텐츠 데이터에 근거가 없는 질문에는 답하지 않는 것이 올바른 결과일 수 있다.
+
+다음과 같은 응답을 허용한다.
+
+```text
+관련 정책 문서를 찾지 못했습니다.
+
+현재 제공된 데이터만으로는 판단할 수 없습니다.
+```
+
+LLM이 반드시 모든 질문에 답하도록 Prompt를 수정하지 않는다.
+
+No Answer Dataset을 별도로 유지한다.
+
+---
+
+# 19. Performance와 Cost도 기록한다
+
+품질 개선과 함께 필요한 경우 다음을 측정한다.
+
+```text
+Embedding Latency
+
+Retrieval Latency
+
+Reranking Latency
+
+LLM Latency
+
+End-to-End Latency
+
+Input Token
+
+Output Token
+
+예상 비용
+```
+
+단, 이번 프로젝트의 핵심 판단 기준은 단순 최저 Latency가 아니다.
+
+품질과 Latency / Cost의 Trade-off를 함께 본다.
+
+---
+
+# 20. Experiment 파일명은 문제 중심으로 작성한다
+
+좋은 예:
+
+```text
+001-baseline.md
+002-retrieval-failures.md
+003-chunking-analysis.md
+004-exact-keyword-retrieval.md
+005-ranking-quality.md
+006-generation-grounding.md
+007-tool-selection.md
+008-agent-workflow.md
+009-final-comparison.md
+```
+
+피해야 할 예:
+
+```text
+004-add-bm25.md
+005-add-rrf.md
+006-add-reranker.md
+007-add-langgraph.md
+```
+
+실험 시작 전에 답을 파일명에 넣지 않는다.
+
+---
+
+# 21. Experiment 작성 형식
+
+가능하면 다음 구조를 사용한다.
+
+```text
+목적
+
+현재 상태
+
+문제
+
+가설
+
+Dataset
+
+실험 조건
+
+변경 변수
+
+Metric
+
+결과
+
+실패 Case
+
+분석
+
+대안
+
+결정
+
+Before / After
+
+결론
+```
+
+실제로 측정하지 않은 숫자를 작성하지 않는다.
+
+예상과 다른 결과도 그대로 남긴다.
+
+---
+
+# 22. Human Gate
+
+다음 변경은 구현하기 전에 Human Gate에서 멈춘다.
+
+```text
+Chunking 기본 전략 변경
+
+Embedding Model 변경
+
+Keyword Search 도입
+
+Hybrid Search / Fusion 전략 결정
+
+RRF 도입
+
+Reranker 도입
+
+Prompt 정책의 의미 있는 변경
+
+LLM Model 변경
+
+Agent Tool 추가 / 제거
+
+Tool Routing 전략 변경
+
+LangGraph 도입
+
+Multi-Agent 도입
+
+Vector Store 변경
+
+Evaluation 기준 변경
+```
+
+Human Gate에서는 다음 순서로 보고한다.
+
+```text
+현재 실패 Case
+
+↓
+
+측정 결과
+
+↓
+
+원인 분석
+
+↓
+
+가능한 후보
+
+↓
+
+각 후보 장점 / 단점
+
+↓
+
+추천안
+
+↓
+
+STOP
+```
+
+사용자가 선택한 이후 구현한다.
+
+---
+
+# 23. Git Checkpoint
+
+가능하면 다음 상태를 별도 Commit으로 남긴다.
+
+```text
+Baseline 구현 완료
+
+Baseline Evaluation 완료
+
+문제 재현 완료
+
+개선 직전 상태
+
+개선 적용 완료
+
+재평가 완료
+
+중요한 설계 변경 완료
+```
+
+특히:
+
+```text
+문제 재현
++
+해결
+```
+
+을 하나의 Commit으로 합치지 않는다.
+
+예:
+
+```text
+experiment: reproduce exact keyword retrieval misses
+
+feat: add hybrid retrieval
+```
+
+처럼 분리한다.
+
+---
+
+# 24. README
+
+Phase 1 완료 시점부터 README에서 최소한 다음 내용을 확인할 수 있어야 한다.
+
+```text
+프로젝트 목적
+
+실행 방법
+
+PostgreSQL / pgvector 실행 방법
+
+Sample Document 적재 방법
+
+Question API 호출 방법
+
+Test 실행 방법
+
+Evaluation 실행 방법
+
+Experiment 위치
+```
+
+README 작성을 프로젝트 마지막까지 미루지 않는다.
+
+---
+
+# 25. DESIGN 관리
+
+`DESIGN.md`에는 현재 실제 코드만 기록한다.
+
+예를 들어 ROADMAP에 Hybrid Search가 있다고 해서 Baseline DESIGN에 다음을 넣지 않는다.
+
+```text
+Vector
++
+Keyword
++
+RRF
++
+Reranker
+```
+
+현재 코드가 Vector Search만 사용한다면 DESIGN도 Vector Search만 표현한다.
+
+실험과 Human Gate를 거쳐 실제 구조가 바뀐 뒤 DESIGN을 갱신한다.
+
+---
+
+# 26. ADR
+
+Phase 변경 자체는 ADR이 아니다.
+
+다음과 같은 중요한 선택에만 ADR을 고려한다.
+
+```text
+최종 Retrieval 전략
+
+Chunking 전략
+
+Reranking 채택
+
+Embedding Model 변경
+
+Agent Workflow 구조
+
+Tool Routing 전략
+
+Vector Store 변경
+```
+
+단순한 실험 결과나 유지 결정에는 ADR이 필요하지 않을 수 있다.
+
+---
+
+# 27. 작업 완료 보고
+
+Task 또는 Experiment가 끝나면 다음 내용을 보고한다.
+
+```text
+수행한 작업
+
+변경한 파일
+
+실행한 Test
+
+Evaluation 조건
+
+실제 Metric
+
+실패 Case
+
+현재 Phase 완료 여부
+
+설계 변경 여부
+
+ADR 필요 여부
+
+다음 Human Gate
+```
+
+측정하지 않은 개선이나 검증하지 않은 보장을 주장하지 않는다.
+
+---
+
+# 28. 프로젝트 기본 Loop
+
+전체 프로젝트에서는 다음 Loop를 유지한다.
+
+```text
+ROADMAP
+   ↓
+TASK
+   ↓
+PLAN
+   ↓
+IMPLEMENT
+   ↓
+TEST
+   ↓
+EVALUATE
+   ↓
+FAILURE ANALYSIS
+   ↓
+후보 비교
+   ↓
+HUMAN GATE
+   ↓
+DECIDE
+   ↓
+IMPLEMENT
+   ↓
+RE-EVALUATE
+   ↓
+ADR / DESIGN
+   ↓
+COMMIT
+   ↓
+NEXT TASK
+```
+
+핵심 원칙은 다음과 같다.
+
+> AI 기능은 구현됐다는 사실이 아니라 동일한 Evaluation Dataset에서 어떤 실패가 발생했고, 변경 이후 그 실패가 어떻게 달라졌는지로 판단한다.
