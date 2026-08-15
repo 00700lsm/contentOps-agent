@@ -1,6 +1,8 @@
 package com.contentopsagent.evaluation.runner;
 
 import com.contentopsagent.common.config.AppProperties;
+import com.contentopsagent.document.DocumentIngestionService;
+import com.contentopsagent.document.IngestStats;
 import com.contentopsagent.evaluation.dataset.EvaluationDatasetLoader;
 import com.contentopsagent.evaluation.dataset.EvaluationQuery;
 import com.contentopsagent.evaluation.metric.FailureClassifier;
@@ -40,6 +42,7 @@ public class EvaluationRunner {
     private final EvaluationDatasetLoader datasetLoader;
     private final RetrievalService retrievalService;
     private final RagService ragService;
+    private final DocumentIngestionService ingestionService;
     private final ObjectMapper objectMapper;
 
     public EvaluationRunner(
@@ -47,12 +50,14 @@ public class EvaluationRunner {
             EvaluationDatasetLoader datasetLoader,
             RetrievalService retrievalService,
             RagService ragService,
+            DocumentIngestionService ingestionService,
             ObjectMapper objectMapper
     ) {
         this.properties = properties;
         this.datasetLoader = datasetLoader;
         this.retrievalService = retrievalService;
         this.ragService = ragService;
+        this.ingestionService = ingestionService;
         this.objectMapper = objectMapper.copy()
                 .registerModule(new JavaTimeModule())
                 .enable(SerializationFeature.INDENT_OUTPUT)
@@ -67,6 +72,13 @@ public class EvaluationRunner {
             queryResults.add(evaluate(query));
         }
 
+        IngestStats ingestStats = ingestionService.lastStats();
+        String chunkingStrategy = ingestStats == null
+                ? properties.getRag().getChunkingStrategy()
+                : ingestStats.chunkingStrategy();
+        int chunkCount = ingestStats == null ? 0 : ingestStats.chunkCount();
+        int averageChunkChars = ingestStats == null ? 0 : ingestStats.averageChunkChars();
+
         EvaluationResult result = new EvaluationResult(
                 Instant.now(),
                 properties.getDocuments().getPath(),
@@ -77,17 +89,22 @@ public class EvaluationRunner {
                 properties.getRag().getChunkOverlap(),
                 properties.getRag().getTopK(),
                 "Vector Search Only",
+                chunkingStrategy,
+                chunkCount,
+                averageChunkChars,
                 EvaluationSummary.from(queryResults),
                 queryResults
         );
         Path output = write(result);
         log.info(
-                "evaluation complete queries={} scored={} hitRate@K={} recall@K={} mrr={} avgRetrievalMs={} avgLlmMs={} output={}",
+                "evaluation complete queries={} scored={} hitRate@K={} recall@K={} mrr={} strategy={} chunks={} avgRetrievalMs={} avgLlmMs={} output={}",
                 result.metrics().queryCount(),
                 result.metrics().scoredQueryCount(),
                 result.metrics().hitRateAtK(),
                 result.metrics().recallAtK(),
                 result.metrics().mrr(),
+                result.chunkingStrategy(),
+                result.chunkCount(),
                 result.metrics().avgRetrievalLatencyMs(),
                 result.metrics().avgLlmLatencyMs(),
                 output.toAbsolutePath()

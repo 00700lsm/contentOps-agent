@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 import com.contentopsagent.common.config.AppProperties;
 import com.contentopsagent.evaluation.dataset.EvaluationDatasetLoader;
 import com.contentopsagent.evaluation.result.EvaluationResult;
+import com.contentopsagent.document.DocumentIngestionService;
 import com.contentopsagent.rag.RagService;
 import com.contentopsagent.rag.model.AnswerSource;
 import com.contentopsagent.rag.model.RagAnswer;
@@ -35,6 +36,9 @@ class EvaluationRunnerTest {
 
     @Mock
     private RagService ragService;
+
+    @Mock
+    private DocumentIngestionService ingestionService;
 
     @Test
     void writesMetricsAndPerQueryRanking() throws Exception {
@@ -74,6 +78,7 @@ class EvaluationRunnerTest {
                 new EvaluationDatasetLoader(new ObjectMapper()),
                 retrievalService,
                 ragService,
+                ingestionService,
                 new ObjectMapper()
         );
 

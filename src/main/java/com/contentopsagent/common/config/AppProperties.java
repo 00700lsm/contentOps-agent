@@ -56,6 +56,7 @@ public class AppProperties {
         private int topK = 5;
         private int chunkSize = 500;
         private int chunkOverlap = 50;
+        private String chunkingStrategy = "fixed";
 
         public int getTopK() {
             return topK;
@@ -79,6 +80,14 @@ public class AppProperties {
 
         public void setChunkOverlap(int chunkOverlap) {
             this.chunkOverlap = chunkOverlap;
+        }
+
+        public String getChunkingStrategy() {
+            return chunkingStrategy;
+        }
+
+        public void setChunkingStrategy(String chunkingStrategy) {
+            this.chunkingStrategy = chunkingStrategy;
         }
     }
 

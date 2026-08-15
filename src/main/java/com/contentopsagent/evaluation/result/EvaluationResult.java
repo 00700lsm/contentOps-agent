@@ -13,6 +13,9 @@ public record EvaluationResult(
         int chunkOverlap,
         int topK,
         String retrievalStrategy,
+        String chunkingStrategy,
+        int chunkCount,
+        int averageChunkChars,
         EvaluationSummary metrics,
         List<QueryEvaluationResult> queries
 ) {

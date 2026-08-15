@@ -28,6 +28,7 @@ app:
     top-k: 5
     chunk-size: 500
     chunk-overlap: 50
+    chunking-strategy: fixed
   ai:
     embedding-model: nomic-embed-text
     chat-model: llama3.2
