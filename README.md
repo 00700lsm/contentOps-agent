@@ -99,9 +99,12 @@ curl -s -X POST http://localhost:8080/api/v1/questions \
       "document": "age-rating-policy.md",
       "section": "3.2 공개 조건"
     }
-  ]
+  ],
+  "tools": ["search_policy_documents"]
 }
 ```
+
+`sources`는 Retriever가 반환한 Chunk Metadata다. LLM Citation이 아니다.
 
 ## Test
 
@@ -146,6 +149,12 @@ Tool Selection Accuracy
 Sequence Accuracy
 ```
 
+Retrieval Evaluation은 Question API와 다른 경로다. `RetrievalService` + `RagService`로 문서 RAG만 측정한다.
+
+Agent Evaluation은 Question API와 같은 Simple Tool Calling 경로를 측정한다.
+
 ## Experiment
 
 실험 기록은 `docs/experiments/`에 남긴다.
+
+최종 비교는 `docs/experiments/009-final-comparison.md`다.

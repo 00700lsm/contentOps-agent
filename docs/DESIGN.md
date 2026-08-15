@@ -44,8 +44,8 @@ evaluation/
 ```text
 Current Phase
 
-Phase 8
-Tool Selection / Agent Workflow 평가
+Phase 9
+최종 Evaluation 및 비교
 ```
 
 Question API는 단순 Tool Calling을 사용한다.
@@ -1741,6 +1741,10 @@ Phase 8 Human Gate에서 단순 Tool Calling 유지를 선택했다.
 LangGraph / Multi-Agent는 없다.
 
 평가 결과는 `docs/experiments/007-tool-selection.md`에 있다.
+
+Baseline과 최종 비교는 `docs/experiments/009-final-comparison.md`에 있다.
+
+Retrieval 전략은 Vector Search Only다. Keyword / Hybrid / RRF / Reranker는 없다.
 
 ---
 
