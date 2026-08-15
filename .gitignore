@@ -3,5 +3,6 @@ build/
 .idea/
 *.iml
 .DS_Store
+.blog/
 evaluation/results/*
 !evaluation/results/.gitkeep
