@@ -8,6 +8,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.contentopsagent.document.DocumentIngestionService;
 import com.contentopsagent.question.dto.QuestionResponse;
 import com.contentopsagent.question.service.QuestionService;
+import com.contentopsagent.rag.model.RagAnswer;
+import com.contentopsagent.retrieval.RetrievalService;
+import com.contentopsagent.retrieval.model.RetrievalResult;
 import com.contentopsagent.support.TestAiConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -50,6 +53,12 @@ class RagPipelineIT {
     private DocumentIngestionService ingestionService;
 
     @Autowired
+    private RetrievalService retrievalService;
+
+    @Autowired
+    private RagService ragService;
+
+    @Autowired
     private QuestionService questionService;
 
     @Autowired
@@ -62,26 +71,30 @@ class RagPipelineIT {
 
     @Test
     void generatesAnswerFromRetrievedContextAndReturnsSources() {
-        QuestionResponse response = questionService.ask("15세 콘텐츠의 공개 조건이 뭐야?");
+        RetrievalResult retrieval = retrievalService.search("15세 콘텐츠의 공개 조건이 뭐야?");
+        RagAnswer generated = ragService.generate("15세 콘텐츠의 공개 조건이 뭐야?", retrieval.chunks());
 
-        assertThat(response.answer()).isEqualTo("테스트 답변입니다.");
-        assertThat(response.sources()).isNotEmpty();
-        assertThat(response.sources()).allSatisfy(source -> {
+        assertThat(generated.answer()).isEqualTo("테스트 답변입니다.");
+        assertThat(generated.sources()).isNotEmpty();
+        assertThat(generated.sources()).allSatisfy(source -> {
             assertThat(source.document()).endsWith(".md");
             assertThat(source.section()).isNotBlank();
         });
     }
 
     @Test
-    void questionApiDoesNotExposeSimilarityScore() throws Exception {
+    void questionApiUsesAgentPathWithoutExposingSimilarityScore() throws Exception {
+        QuestionResponse response = questionService.ask("15세 콘텐츠의 공개 조건이 뭐야?");
+        assertThat(response.answer()).isEqualTo("테스트 답변입니다.");
+        assertThat(response.tools()).isNotNull();
+
         mockMvc.perform(post("/api/v1/questions")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"question\":\"CONTENT_BLOCKED는 언제 사용하는가?\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.answer").value("테스트 답변입니다."))
                 .andExpect(jsonPath("$.sources").isArray())
-                .andExpect(jsonPath("$.sources[0].document").exists())
-                .andExpect(jsonPath("$.sources[0].section").exists())
+                .andExpect(jsonPath("$.tools").isArray())
                 .andExpect(jsonPath("$.sources[0].similarityScore").doesNotExist());
     }
 }

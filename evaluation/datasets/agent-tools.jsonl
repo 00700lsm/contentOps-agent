@@ -4,3 +4,5 @@
 {"id":"tool-004","category":"CONTENT_SEARCH","question":"CONTENT_BLOCKED 상태인 액션 콘텐츠 찾아줘.","expectedTools":["search_contents"],"expectedContentIds":[101],"answerable":true}
 {"id":"tool-005","category":"CONTENT_DETAIL","question":"콘텐츠 104번의 메타데이터 상태는?","expectedTools":["get_content_detail"],"expectedContentIds":[104],"answerable":true}
 {"id":"tool-006","category":"POLICY_ONLY","question":"OPS-101은 무엇인가?","expectedTools":["search_policy_documents"],"answerable":true}
+{"id":"tool-007","category":"MULTI_TOOL","question":"콘텐츠 101번이 왜 공개되지 않는지 정책 기준으로 설명해줘.","expectedTools":["get_content_detail","search_policy_documents"],"expectedContentIds":[101],"answerable":true}
+{"id":"tool-008","category":"MULTI_TOOL","question":"콘텐츠 104번이 공개되지 않는 이유를 메타데이터 정책 기준으로 설명해줘.","expectedTools":["get_content_detail","search_policy_documents"],"expectedContentIds":[104],"answerable":true}

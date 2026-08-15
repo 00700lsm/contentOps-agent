@@ -3,27 +3,23 @@
 ## Current Phase
 
 ```text
-Phase 7
-Content Data Tool 구현
+Phase 8
+Tool Selection / Agent Workflow 평가
 ```
 
 구현 기준은 `docs/DESIGN.md`다.
 
-완료 조건은 `docs/ROADMAP.md` Phase 7을 따른다.
+완료 조건은 `docs/ROADMAP.md` Phase 8을 따른다.
 
 ---
 
 ## 목표
 
-문서 검색만으로 해결할 수 없는 **구조화된 콘텐츠 데이터 질문**을 처리할 수 있도록 Tool을 추가한다.
+질문에 따라 **적절한 Tool을 선택하고, 필요하면 여러 Tool을 조합할 수 있는지** 평가한다.
 
-자유 SQL을 LLM이 실행하게 하지 않는다.
+단순 Tool Calling부터 확인한다.
 
-명시적 Tool Interface만 둔다.
-
-LangGraph / Multi-Agent는 만들지 않는다.
-
-Question API의 RAG 경로는 유지한다. Tool 선택 평가는 Phase 8에서 한다.
+LangGraph / Multi-Agent는 측정 전에 넣지 않는다.
 
 ---
 
@@ -37,58 +33,46 @@ Reranker
 Embedding Model 변경
 LLM Model 변경
 Retrieval Evaluation Dataset 변경
-Prompt 정책 변경
 LangGraph
 Multi-Agent
-Multi Tool 조합 평가
 ```
 
----
-
-## 기본 Tool
-
-```text
-search_policy_documents
-search_contents
-get_content_detail
-```
+Agent Workflow를 바꾸기 전에 Human Gate에서 멈춘다.
 
 ---
 
 ## Tasks
 
-### 1. Sample Content
+### 1. Simple Tool Calling
 
-- [x] `data/contents/contents.json` 추가
-- [x] PostgreSQL `contents` 테이블에 적재한다.
+- [x] Question API가 Tool을 선택해 호출할 수 있게 한다.
+- [x] Policy / Content Search / Content Detail / Multi Tool Dataset을 준비한다.
 
-### 2. Tool
+### 2. Evaluation
 
-- [x] 조건 기반 Content Search
-- [x] Content Detail
-- [x] Policy Search를 Tool로 노출
+- [x] 동일 Agent Dataset으로 Tool Selection을 평가한다.
+- [x] Expected / Actual Tool, 불필요 호출, Accuracy를 기록한다.
 
-### 3. Dataset / Test
+### 3. Experiment / Human Gate
 
-- [x] `evaluation/datasets/agent-tools.jsonl`에 Policy / Content Search / Content Detail Query 추가
-- [x] Tool별 Test
-
-### 4. DESIGN
-
-- [x] 현재 코드 기준으로 DESIGN을 갱신한다.
+- [x] `docs/experiments/007-tool-selection.md` 작성
+- [x] 단순 Tool Calling의 충분성을 판단했다. Multi Tool과 일부 Search는 부족하다.
+- [x] Human Gate에서 후보 A를 선택했다. 단순 Tool Calling을 유지한다.
 
 ---
 
 ## 완료 조건
 
 ```text
-[x] Sample Content 데이터가 존재한다.
-[x] 조건 기반 Content Search가 가능하다.
-[x] Content Detail 조회가 가능하다.
-[x] Policy Search 역할이 Tool 단위로 사용할 수 있다.
-[x] Tool별 Test가 존재한다.
-[x] Agent Evaluation Dataset에 Tool Query가 추가됐다.
-[x] 아직 불필요한 Multi-Agent 구조를 만들지 않았다.
+[x] Policy Query를 올바른 Tool로 처리할 수 있다. (집합 기준 2/2, 1건 중복 호출)
+[x] Content Search Query를 처리할 수 있다. (1건 실행, 1건 미실행)
+[x] Content Detail Query를 처리할 수 있다. (2/2 MATCH)
+[x] Multi Tool Query를 처리할 수 있다. (상세만 호출, 정책 누락)
+[x] Expected / Actual Tool을 비교했다.
+[x] Tool Selection Accuracy를 확인할 수 있다. (집합 0.625)
+[x] 불필요한 Tool 호출을 분석했다. (중복 호출 2건, Wrong Tool 0)
+[x] 단순 Tool Calling의 충분성 여부를 판단했다.
+[x] Human Gate에서 단순 Tool Calling 유지를 선택했다.
 ```
 
-Question API는 문서 RAG를 유지한다. Tool Selection Evaluation은 Phase 8이다.
+LangGraph / Multi-Agent는 넣지 않았다. DESIGN은 현재 단순 Tool Calling과 일치한다. ADR은 없다.

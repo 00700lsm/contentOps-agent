@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 
 class QuestionServiceTest {
 
-    private final QuestionService questionService = new QuestionService(null, null);
+    private final QuestionService questionService = new QuestionService(null);
 
     @Test
     void rejectsNullOrBlankQuestion() {

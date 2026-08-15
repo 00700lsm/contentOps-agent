@@ -1,14 +1,10 @@
 package com.contentopsagent.question.service;
 
+import com.contentopsagent.agent.AgentAnswer;
+import com.contentopsagent.agent.AgentService;
 import com.contentopsagent.common.exception.AppException;
 import com.contentopsagent.common.exception.ErrorCode;
 import com.contentopsagent.question.dto.QuestionResponse;
-import com.contentopsagent.question.dto.SourceDto;
-import com.contentopsagent.rag.RagService;
-import com.contentopsagent.rag.model.RagAnswer;
-import com.contentopsagent.retrieval.RetrievalService;
-import com.contentopsagent.retrieval.model.RetrievalResult;
-import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -18,12 +14,10 @@ public class QuestionService {
 
     private static final Logger log = LoggerFactory.getLogger(QuestionService.class);
 
-    private final RetrievalService retrievalService;
-    private final RagService ragService;
+    private final AgentService agentService;
 
-    public QuestionService(RetrievalService retrievalService, RagService ragService) {
-        this.retrievalService = retrievalService;
-        this.ragService = ragService;
+    public QuestionService(AgentService agentService) {
+        this.agentService = agentService;
     }
 
     public QuestionResponse ask(String question) {
@@ -32,29 +26,13 @@ public class QuestionService {
             throw new AppException(ErrorCode.INVALID_QUESTION);
         }
 
-        long started = System.nanoTime();
-        RetrievalResult retrieval = retrievalService.search(normalized);
-        RagAnswer generated = ragService.generate(normalized, retrieval.chunks());
-        long totalLatencyMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - started);
-
+        AgentAnswer generated = agentService.ask(normalized);
         log.info(
-                "question handled topK={} retrieved={} embeddingLatencyMs={} retrievalLatencyMs={} llmLatencyMs={} totalLatencyMs={} ranks={}",
-                retrieval.topK(),
-                retrieval.chunks().size(),
-                retrieval.embeddingLatencyMs(),
-                retrieval.retrievalLatencyMs(),
-                generated.llmLatencyMs(),
-                totalLatencyMs,
-                retrieval.chunks().stream()
-                        .map(chunk -> chunk.rank() + ":" + chunk.documentName() + ":" + chunk.similarityScore())
-                        .toList()
+                "question handled tools={} latencyMs={} answerLength={}",
+                generated.toolNames(),
+                generated.latencyMs(),
+                generated.answer().length()
         );
-
-        return new QuestionResponse(
-                generated.answer(),
-                generated.sources().stream()
-                        .map(source -> new SourceDto(source.document(), source.section()))
-                        .toList()
-        );
+        return new QuestionResponse(generated.answer(), generated.sources(), generated.toolNames());
     }
 }

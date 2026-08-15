@@ -2,7 +2,7 @@
 
 OTT 콘텐츠 운영자를 위한 운영 문서 RAG + Content Tool 시스템이다.
 
-Question API는 운영 문서 Vector RAG다. 콘텐츠 조회 Tool은 구현되어 있으나 질문 라우팅은 Phase 8에서 평가한다. Keyword Search, Hybrid Search, Reranker, LangGraph, Multi-Agent는 포함하지 않는다.
+Question API는 단순 Tool Calling이다. Keyword Search, Hybrid Search, Reranker, LangGraph, Multi-Agent는 포함하지 않는다.
 
 ## 실행 환경
 
@@ -123,9 +123,15 @@ Dataset: `evaluation/datasets/retrieval.jsonl`
 
 Agent Tool Dataset: `evaluation/datasets/agent-tools.jsonl`
 
+Agent Evaluation:
+
+```bash
+./gradlew bootRun --args='--app.ingest.enabled=true --app.evaluate.agent-enabled=true --spring.main.web-application-type=none'
+```
+
 결과: `evaluation/results/`
 
-계산하는 Metric:
+Retrieval Metric:
 
 ```text
 Hit Rate@K
@@ -133,7 +139,12 @@ Recall@K
 MRR
 ```
 
-Phase 1의 목적은 Metric이 높은 것이 아니라, 같은 Dataset으로 반복 측정할 수 있는 상태를 만드는 것이다.
+Agent Metric:
+
+```text
+Tool Selection Accuracy
+Sequence Accuracy
+```
 
 ## Experiment
 

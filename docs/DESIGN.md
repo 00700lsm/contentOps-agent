@@ -44,13 +44,13 @@ evaluation/
 ```text
 Current Phase
 
-Phase 7
-Content Data Tool 구현
+Phase 8
+Tool Selection / Agent Workflow 평가
 ```
 
-Question API는 여전히 운영 문서 Vector RAG다.
+Question API는 단순 Tool Calling을 사용한다.
 
-콘텐츠 조회는 명시적 Tool로 분리되어 있다. LLM Tool Selection과 Agent Workflow는 아직 Question API에 연결하지 않는다.
+LangGraph / Multi-Agent는 없다.
 
 현재 시스템 구조는 다음과 같다.
 
@@ -66,28 +66,22 @@ Sample Policy Documents
  PostgreSQL + pgvector
 
 
+Sample Contents JSON
+          ↓
+     contents 테이블
+
+
 User
  ↓
 Question API
  ↓
-Question Embedding
+LLM Tool Selection
  ↓
-Vector Search
+search_policy_documents
+search_contents
+get_content_detail
  ↓
-Top K Chunks
- ↓
-Context Builder
- ↓
-LLM
- ↓
-Answer + Sources
-
-
-Sample Contents JSON
-          ↓
-     contents 테이블
-          ↓
-search_contents / get_content_detail
+Answer + Sources + Tools
 ```
 
 ---
@@ -110,10 +104,6 @@ Reranker
 Query Rewrite
 
 Multi Query
-
-Tool Calling in Question API
-
-Agent Workflow
 
 LangGraph
 
@@ -1670,15 +1660,9 @@ Phase 6 Human Gate에서 후보 B를 적용했다. 규칙은 `BaselinePrompt`와
 
 ## 운영 문서 질문과 콘텐츠 Tool
 
-Question API는 다음 질문을 아직 Tool로 라우팅하지 않는다.
+Question API는 `AgentService`가 Tool을 선택한다.
 
-```text
-이번 달 공개 예정 콘텐츠 알려줘.
-
-콘텐츠 100번 상태 알려줘.
-```
-
-해당 조회는 아래 Tool로 가능하다. Question API 연결은 Phase 8에서 평가한다.
+Retrieval Evaluation은 기존처럼 `RetrievalService` + `RagService`를 직접 호출한다.
 
 ---
 
@@ -1736,21 +1720,27 @@ Multi Tool 조합은 아직 넣지 않는다.
 
 ---
 
-## Agent Workflow 없음
+## Agent Workflow
 
-현재 질문 흐름은 항상 같다.
+Question API 흐름:
 
 ```text
 Question
  ↓
-Vector Retrieval
+LLM Tool Selection
  ↓
-LLM
+Tool
+ ↓
+Answer
 ```
 
-Tool은 호출 가능한 단위로만 존재한다.
+구현은 Spring AI ChatClient + `@Tool`이다.
+
+Phase 8 Human Gate에서 단순 Tool Calling 유지를 선택했다.
 
 LangGraph / Multi-Agent는 없다.
+
+평가 결과는 `docs/experiments/007-tool-selection.md`에 있다.
 
 ---
 

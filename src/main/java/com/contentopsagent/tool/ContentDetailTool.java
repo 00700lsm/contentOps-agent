@@ -1,5 +1,6 @@
 package com.contentopsagent.tool;
 
+import com.contentopsagent.agent.ToolCallTrace;
 import com.contentopsagent.content.ContentQueryService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,17 +15,23 @@ public class ContentDetailTool {
 
     private final ContentQueryService contentQueryService;
     private final ObjectMapper objectMapper;
+    private final ToolCallTrace toolCallTrace;
 
-    public ContentDetailTool(ContentQueryService contentQueryService, ObjectMapper objectMapper) {
+    public ContentDetailTool(
+            ContentQueryService contentQueryService,
+            ObjectMapper objectMapper,
+            ToolCallTrace toolCallTrace
+    ) {
         this.contentQueryService = contentQueryService;
         this.objectMapper = objectMapper;
+        this.toolCallTrace = toolCallTrace;
     }
 
     @Tool(name = NAME, description = "콘텐츠 ID로 상세 정보를 조회한다. 정책 문서를 검색하지 않는다.")
     public String getContentDetail(
             @ToolParam(description = "콘텐츠 ID") long contentId
     ) {
-        return contentQueryService.findById(contentId)
+        String output = contentQueryService.findById(contentId)
                 .map(record -> {
                     try {
                         return objectMapper.writeValueAsString(record);
@@ -33,5 +40,7 @@ public class ContentDetailTool {
                     }
                 })
                 .orElse("콘텐츠를 찾지 못했습니다. id=" + contentId);
+        toolCallTrace.record(NAME, String.valueOf(contentId), output);
+        return output;
     }
 }

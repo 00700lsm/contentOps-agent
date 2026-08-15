@@ -62,5 +62,10 @@ class EvaluationDatasetLoaderTest {
         assertThat(queries)
                 .filteredOn(query -> "CONTENT_DETAIL".equals(query.category()))
                 .allSatisfy(query -> assertThat(query.expectedTools()).containsExactly("get_content_detail"));
+        assertThat(queries)
+                .filteredOn(query -> "MULTI_TOOL".equals(query.category()))
+                .allSatisfy(query -> assertThat(query.expectedTools())
+                        .containsExactly("get_content_detail", "search_policy_documents"));
+        assertThat(queries).extracting(EvaluationQuery::id).contains("tool-007", "tool-008");
     }
 }

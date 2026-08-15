@@ -143,7 +143,9 @@ public class AppProperties {
 
     public static class Evaluate {
         private boolean enabled = false;
+        private boolean agentEnabled = false;
         private String datasetPath = "evaluation/datasets/retrieval.jsonl";
+        private String agentDatasetPath = "evaluation/datasets/agent-tools.jsonl";
         private String resultsDir = "evaluation/results";
 
         public boolean isEnabled() {
@@ -154,12 +156,28 @@ public class AppProperties {
             this.enabled = enabled;
         }
 
+        public boolean isAgentEnabled() {
+            return agentEnabled;
+        }
+
+        public void setAgentEnabled(boolean agentEnabled) {
+            this.agentEnabled = agentEnabled;
+        }
+
         public String getDatasetPath() {
             return datasetPath;
         }
 
         public void setDatasetPath(String datasetPath) {
             this.datasetPath = datasetPath;
+        }
+
+        public String getAgentDatasetPath() {
+            return agentDatasetPath;
+        }
+
+        public void setAgentDatasetPath(String agentDatasetPath) {
+            this.agentDatasetPath = agentDatasetPath;
         }
 
         public String getResultsDir() {

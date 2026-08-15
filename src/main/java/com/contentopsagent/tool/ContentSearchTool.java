@@ -1,5 +1,6 @@
 package com.contentopsagent.tool;
 
+import com.contentopsagent.agent.ToolCallTrace;
 import com.contentopsagent.content.ContentQueryService;
 import com.contentopsagent.content.model.ContentRecord;
 import com.contentopsagent.content.model.ContentSearchCriteria;
@@ -17,10 +18,16 @@ public class ContentSearchTool {
 
     private final ContentQueryService contentQueryService;
     private final ObjectMapper objectMapper;
+    private final ToolCallTrace toolCallTrace;
 
-    public ContentSearchTool(ContentQueryService contentQueryService, ObjectMapper objectMapper) {
+    public ContentSearchTool(
+            ContentQueryService contentQueryService,
+            ObjectMapper objectMapper,
+            ToolCallTrace toolCallTrace
+    ) {
         this.contentQueryService = contentQueryService;
         this.objectMapper = objectMapper;
+        this.toolCallTrace = toolCallTrace;
     }
 
     @Tool(name = NAME, description = "장르, 상태, 공개일 등 조건으로 콘텐츠를 검색한다. 자유 SQL을 실행하지 않는다.")
@@ -46,7 +53,9 @@ public class ContentSearchTool {
         );
         List<ContentRecord> found = contentQueryService.search(criteria);
         try {
-            return objectMapper.writeValueAsString(found);
+            String output = objectMapper.writeValueAsString(found);
+            toolCallTrace.record(NAME, String.valueOf(criteria), output);
+            return output;
         } catch (JsonProcessingException e) {
             throw new IllegalStateException("콘텐츠 검색 결과를 직렬화하지 못했습니다.", e);
         }

@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.contentopsagent.agent.ToolCallTrace;
 import com.contentopsagent.rag.ContextBuilder;
 import com.contentopsagent.retrieval.RetrievalService;
 import com.contentopsagent.retrieval.model.RetrievalResult;
@@ -30,7 +31,7 @@ class PolicySearchToolTest {
                 20L
         ));
 
-        String result = new PolicySearchTool(retrievalService, new ContextBuilder())
+        String result = new PolicySearchTool(retrievalService, new ContextBuilder(), new ToolCallTrace())
                 .searchPolicyDocuments("OPS-101은 무엇인가?");
 
         verify(retrievalService).search("OPS-101은 무엇인가?");
@@ -43,7 +44,7 @@ class PolicySearchToolTest {
     void returnsNoDocumentMessageWhenEmpty() {
         when(retrievalService.search("없는 정책")).thenReturn(new RetrievalResult("없는 정책", 5, List.of(), 1L, 1L));
 
-        String result = new PolicySearchTool(retrievalService, new ContextBuilder())
+        String result = new PolicySearchTool(retrievalService, new ContextBuilder(), new ToolCallTrace())
                 .searchPolicyDocuments("없는 정책");
 
         assertThat(result).isEqualTo("관련 정책 문서를 찾지 못했습니다.");

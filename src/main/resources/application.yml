@@ -38,7 +38,9 @@ app:
     enabled: false
   evaluate:
     enabled: false
+    agent-enabled: false
     dataset-path: evaluation/datasets/retrieval.jsonl
+    agent-dataset-path: evaluation/datasets/agent-tools.jsonl
     results-dir: evaluation/results
   exit-after-job: true
 
