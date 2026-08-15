@@ -1,0 +1,44 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/contentops
+    username: contentops
+    password: contentops
+  ai:
+    ollama:
+      base-url: http://localhost:11434
+      chat:
+        options:
+          model: ${app.ai.chat-model}
+      embedding:
+        options:
+          model: ${app.ai.embedding-model}
+    vectorstore:
+      pgvector:
+        initialize-schema: true
+        distance-type: COSINE_DISTANCE
+        index-type: HNSW
+
+app:
+  documents:
+    path: data/documents
+  rag:
+    top-k: 5
+    chunk-size: 500
+    chunk-overlap: 50
+  ai:
+    embedding-model: nomic-embed-text
+    chat-model: llama3.2
+  ingest:
+    enabled: false
+  evaluate:
+    enabled: false
+    dataset-path: evaluation/datasets/retrieval.jsonl
+    results-dir: evaluation/results
+  exit-after-job: true
+
+logging:
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level [requestId=%X{requestId:-}] %logger{36} - %msg%n"

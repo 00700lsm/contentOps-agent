@@ -1,0 +1,12 @@
+{"id":"retrieval-001","category":"SEMANTIC","question":"15세 콘텐츠를 공개하려면 어떤 검수가 필요해?","expectedDocuments":["age-rating-policy.md"],"answerable":true}
+{"id":"retrieval-002","category":"SEMANTIC","question":"콘텐츠를 서비스에서 차단하는 운영 상태는 뭐야?","expectedDocuments":["content-status-policy.md"],"answerable":true}
+{"id":"retrieval-003","category":"SEMANTIC","question":"필수 메타데이터가 비어 있으면 어떤 오류로 보나?","expectedDocuments":["metadata-guide.md"],"answerable":true}
+{"id":"retrieval-004","category":"EXACT_KEYWORD","question":"M-03 오류의 의미가 뭐야?","expectedDocuments":["metadata-guide.md"],"answerable":true}
+{"id":"retrieval-005","category":"EXACT_KEYWORD","question":"OPS-101은 무엇인가?","expectedDocuments":["operations-faq.md"],"answerable":true}
+{"id":"retrieval-006","category":"EXACT_KEYWORD","question":"CONTENT_BLOCKED는 언제 사용하는가?","expectedDocuments":["content-status-policy.md"],"answerable":true}
+{"id":"retrieval-007","category":"EXACT_KEYWORD","question":"AGE_REVIEW_REQUIRED는 무슨 상태인가?","expectedDocuments":["age-rating-policy.md"],"answerable":true}
+{"id":"retrieval-008","category":"SIMILAR_DOCUMENT","question":"청소년 보호와 연령 등급의 관계는?","expectedDocuments":["youth-protection-policy.md","age-rating-policy.md"],"answerable":true}
+{"id":"retrieval-009","category":"SIMILAR_DOCUMENT","question":"콘텐츠 공개 전 확인해야 하는 절차는?","expectedDocuments":["publishing-guide.md"],"answerable":true}
+{"id":"retrieval-010","category":"SIMILAR_DOCUMENT","question":"콘텐츠가 공개되지 않을 때 어디부터 확인해야 해?","expectedDocuments":["operations-faq.md"],"answerable":true}
+{"id":"retrieval-011","category":"NO_ANSWER","question":"해외 판권 계약 담당자가 누구야?","expectedDocuments":[],"answerable":false}
+{"id":"retrieval-012","category":"NO_ANSWER","question":"이번 분기 콘텐츠 매출 목표는 얼마야?","expectedDocuments":[],"answerable":false}

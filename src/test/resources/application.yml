@@ -1,0 +1,25 @@
+spring:
+  main:
+    banner-mode: off
+  ai:
+    model:
+      chat: none
+      embedding: none
+    vectorstore:
+      pgvector:
+        initialize-schema: true
+        index-type: NONE
+
+app:
+  ingest:
+    enabled: false
+  evaluate:
+    enabled: false
+  exit-after-job: false
+  rag:
+    top-k: 5
+    chunk-size: 500
+    chunk-overlap: 50
+  ai:
+    embedding-model: test-embedding
+    chat-model: test-chat
