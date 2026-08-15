@@ -977,26 +977,32 @@ Source 정보를 Context에 같이 포함하여 LLM이 답변 근거를 구분�
 
 # 21. Baseline Prompt
 
-Baseline Prompt는 최소한의 Grounding 규칙만 사용한다.
-
-개념적으로 다음 지침을 포함한다.
+Baseline Prompt는 Grounding 규칙과 Phase 6 Human Gate에서 선택한 보강 규칙을 사용한다.
 
 ```text
 제공된 Context를 기준으로 질문에 답한다.
 
-Context에 답변 근거가 없다면
-확인할 수 없다고 답한다.
+질문의 코드, 상태값, 절차가 Context에 있으면
+그 내용을 빠뜨리지 말고 답한다.
+
+Context에 관련 내용이 있으면 거절하지 않는다.
+
+사용하지 않는 경우만 답하지 말고,
+사용하는 시점도 함께 답한다.
+
+답변은 한국어만 사용한다.
 
 내부 정책이나 사실을 추측해서 만들지 않는다.
 
 답변은 간결하게 작성한다.
+
+Context에 근거가 없으면
+현재 제공된 문서에서는 확인할 수 없습니다.
 ```
 
-이 Prompt를 최적화된 Prompt로 간주하지 않는다.
+이 Prompt를 최종 최적안이라고 보지 않는다.
 
-Phase 6에서 Generation / Grounding 실패가 확인되면 변경 여부를 검토한다.
-
-Baseline Evaluation 이전에 Prompt를 반복 수정하지 않는다.
+변경 이유와 재평가 결과는 `docs/experiments/006-generation-grounding.md`에 있다.
 
 ---
 
@@ -1648,9 +1654,9 @@ Phase 5에서 실제 문제가 있는지 평가한다.
 
 ## 기본 Prompt
 
-복잡한 Grounding Prompt Engineering을 적용하지 않는다.
+복잡한 Prompt Engineering 스택을 두지 않는다.
 
-Phase 6에서 Generation / Grounding 결과를 확인한다.
+Phase 6 Human Gate에서 후보 B를 적용했다. 규칙은 `BaselinePrompt`와 `# 21. Baseline Prompt`를 따른다.
 
 ---
 
