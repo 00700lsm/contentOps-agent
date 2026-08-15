@@ -1,0 +1,62 @@
+[
+  {
+    "id": 100,
+    "title": "나이트 레이드",
+    "genre": "액션",
+    "ageRating": "15세 이상 관람가",
+    "status": "SCHEDULED",
+    "releaseDate": "2026-08-20",
+    "serviceRegion": "KR",
+    "metadataStatus": "OK"
+  },
+  {
+    "id": 101,
+    "title": "블랙 서킷",
+    "genre": "액션",
+    "ageRating": "19세 이상 관람가",
+    "status": "CONTENT_BLOCKED",
+    "releaseDate": "2026-08-12",
+    "serviceRegion": "KR",
+    "metadataStatus": "OK"
+  },
+  {
+    "id": 102,
+    "title": "여름의 약속",
+    "genre": "드라마",
+    "ageRating": "12세 이상 관람가",
+    "status": "SCHEDULED",
+    "releaseDate": "2026-08-25",
+    "serviceRegion": "KR",
+    "metadataStatus": "OK"
+  },
+  {
+    "id": 103,
+    "title": "스톰 라인",
+    "genre": "액션",
+    "ageRating": "15세 이상 관람가",
+    "status": "SCHEDULED",
+    "releaseDate": "2026-09-03",
+    "serviceRegion": "KR",
+    "metadataStatus": "OK"
+  },
+  {
+    "id": 104,
+    "title": "히든 게이트",
+    "genre": "액션",
+    "ageRating": "15세 이상 관람가",
+    "status": "READY",
+    "releaseDate": "2026-08-28",
+    "serviceRegion": "KR",
+    "metadataStatus": "M-03"
+  },
+  {
+    "id": 105,
+    "title": "아카이브",
+    "genre": "다큐",
+    "ageRating": "전체 관람가",
+    "status": "PUBLISHED",
+    "releaseDate": "2026-07-01",
+    "serviceRegion": "KR",
+    "metadataStatus": "OK"
+  }
+]

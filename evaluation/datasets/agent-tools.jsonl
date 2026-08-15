@@ -1,0 +1,6 @@
+{"id":"tool-001","category":"POLICY_ONLY","question":"15세 콘텐츠를 공개하려면 어떤 검수가 필요해?","expectedTools":["search_policy_documents"],"answerable":true}
+{"id":"tool-002","category":"CONTENT_SEARCH","question":"이번 달 공개 예정 액션 콘텐츠 알려줘.","expectedTools":["search_contents"],"expectedContentIds":[100],"answerable":true}
+{"id":"tool-003","category":"CONTENT_DETAIL","question":"콘텐츠 100번 현재 상태 알려줘.","expectedTools":["get_content_detail"],"expectedContentIds":[100],"answerable":true}
+{"id":"tool-004","category":"CONTENT_SEARCH","question":"CONTENT_BLOCKED 상태인 액션 콘텐츠 찾아줘.","expectedTools":["search_contents"],"expectedContentIds":[101],"answerable":true}
+{"id":"tool-005","category":"CONTENT_DETAIL","question":"콘텐츠 104번의 메타데이터 상태는?","expectedTools":["get_content_detail"],"expectedContentIds":[104],"answerable":true}
+{"id":"tool-006","category":"POLICY_ONLY","question":"OPS-101은 무엇인가?","expectedTools":["search_policy_documents"],"answerable":true}

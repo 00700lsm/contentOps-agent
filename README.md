@@ -1,8 +1,8 @@
 # ContentOps Agent
 
-OTT 콘텐츠 운영자를 위한 운영 문서 RAG 시스템이다.
+OTT 콘텐츠 운영자를 위한 운영 문서 RAG + Content Tool 시스템이다.
 
-현재 Phase는 Baseline Vector RAG다. Keyword Search, Hybrid Search, Reranker, Agent는 포함하지 않는다.
+Question API는 운영 문서 Vector RAG다. 콘텐츠 조회 Tool은 구현되어 있으나 질문 라우팅은 Phase 8에서 평가한다. Keyword Search, Hybrid Search, Reranker, LangGraph, Multi-Agent는 포함하지 않는다.
 
 ## 실행 환경
 
@@ -57,6 +57,24 @@ Ingest
 
 동일 Dataset을 반복 적재해도 문서가 누적되지 않는다.
 
+## Sample Content 적재
+
+콘텐츠 샘플은 `data/contents/contents.json`이다.
+
+애플리케이션이 시작되면 PostgreSQL `contents` 테이블에 다시 넣는다.
+
+```text
+id, title, genre, ageRating, status, releaseDate, serviceRegion, metadataStatus
+```
+
+Tool:
+
+```text
+search_policy_documents
+search_contents
+get_content_detail
+```
+
 ## 애플리케이션 실행
 
 ```bash
@@ -102,6 +120,8 @@ Test는 코드가 정상 동작하는지를 검증한다. Retrieval 품질이 �
 ```
 
 Dataset: `evaluation/datasets/retrieval.jsonl`
+
+Agent Tool Dataset: `evaluation/datasets/agent-tools.jsonl`
 
 결과: `evaluation/results/`
 

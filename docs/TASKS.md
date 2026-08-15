@@ -3,23 +3,27 @@
 ## Current Phase
 
 ```text
-Phase 6
-Generation / Grounding 분석
+Phase 7
+Content Data Tool 구현
 ```
 
 구현 기준은 `docs/DESIGN.md`다.
 
-완료 조건은 `docs/ROADMAP.md` Phase 6를 따른다.
+완료 조건은 `docs/ROADMAP.md` Phase 7을 따른다.
 
 ---
 
 ## 목표
 
-Retrieval이 성공한 이후에도 **LLM이 검색 Context를 올바르게 사용하는지** 별도로 평가한다.
+문서 검색만으로 해결할 수 없는 **구조화된 콘텐츠 데이터 질문**을 처리할 수 있도록 Tool을 추가한다.
 
-Prompt를 감으로 고치는 Phase가 아니다.
+자유 SQL을 LLM이 실행하게 하지 않는다.
 
-먼저 실패 Case를 기록하고, 의미 있는 Prompt 정책 변경은 Human Gate를 거친다.
+명시적 Tool Interface만 둔다.
+
+LangGraph / Multi-Agent는 만들지 않는다.
+
+Question API의 RAG 경로는 유지한다. Tool 선택 평가는 Phase 8에서 한다.
 
 ---
 
@@ -32,71 +36,59 @@ RRF
 Reranker
 Embedding Model 변경
 LLM Model 변경
-Evaluation Dataset 변경
-Chunking 전략 변경
-Tool 추가
+Retrieval Evaluation Dataset 변경
+Prompt 정책 변경
+LangGraph
+Multi-Agent
+Multi Tool 조합 평가
 ```
-
-Grounding / No Answer 정책을 바꾸는 Prompt 수정은 Human Gate 전에 하지 않는다.
 
 ---
 
-## 확인할 Query
-
-정답 Context가 있는데 답이 틀린 것으로 넘긴 Query:
+## 기본 Tool
 
 ```text
-retrieval-002
-retrieval-003
-retrieval-006
-retrieval-008
-retrieval-009
-```
-
-No Answer:
-
-```text
-retrieval-011
-retrieval-012
+search_policy_documents
+search_contents
+get_content_detail
 ```
 
 ---
 
 ## Tasks
 
-### 1. Retrieval과 Generation 분리
+### 1. Sample Content
 
-동일 Dataset / 동일 평가 결과를 사용한다.
+- [x] `data/contents/contents.json` 추가
+- [x] PostgreSQL `contents` 테이블에 적재한다.
 
-- [x] 문서 Hit인데 답이 틀린 Query를 확인한다.
-- [x] 정답 Section이 Context에 있는지와 문서 Hit를 구분한다.
-- [x] Retrieval Failure인 retrieval-010은 Generation 실패로 넣지 않는다.
+### 2. Tool
 
-### 2. Grounding / No Answer / Source
+- [x] 조건 기반 Content Search
+- [x] Content Detail
+- [x] Policy Search를 Tool로 노출
 
-- [x] Context에 없는 사실을 만들었는지 확인한다.
-- [x] No Answer Query 2건을 평가한다.
-- [x] 응답 Source가 Retriever Top K인지 확인한다.
+### 3. Dataset / Test
 
-### 3. Experiment / Human Gate
+- [x] `evaluation/datasets/agent-tools.jsonl`에 Policy / Content Search / Content Detail Query 추가
+- [x] Tool별 Test
 
-- [x] `docs/experiments/006-generation-grounding.md` 작성
-- [x] Prompt 후보와 장단점을 정리한다.
-- [x] Human Gate에서 후보 B를 선택했다.
-- [x] 동일 Dataset으로 재평가했다.
+### 4. DESIGN
+
+- [x] 현재 코드 기준으로 DESIGN을 갱신한다.
 
 ---
 
 ## 완료 조건
 
 ```text
-[x] Retrieval 성공과 Generation 성공을 분리해 평가했다.
-[x] Grounding Failure를 확인했다.
-[x] No Answer Query를 평가했다.
-[x] Source가 실제 답변 근거인지 확인했다.
-[x] Prompt 변경 후 동일 Dataset으로 재평가했다.
-[x] 변경 전후 결과를 기록했다.
-[x] 해결되지 않은 Hallucination / Grounding 한계도 기록했다.
+[x] Sample Content 데이터가 존재한다.
+[x] 조건 기반 Content Search가 가능하다.
+[x] Content Detail 조회가 가능하다.
+[x] Policy Search 역할이 Tool 단위로 사용할 수 있다.
+[x] Tool별 Test가 존재한다.
+[x] Agent Evaluation Dataset에 Tool Query가 추가됐다.
+[x] 아직 불필요한 Multi-Agent 구조를 만들지 않았다.
 ```
 
-Prompt B를 코드와 DESIGN에 반영했다. ADR은 작성하지 않는다. 최종 Retrieval 구조는 그대로다.
+Question API는 문서 RAG를 유지한다. Tool Selection Evaluation은 Phase 8이다.

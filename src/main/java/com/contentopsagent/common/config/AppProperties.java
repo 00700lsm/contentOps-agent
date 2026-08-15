@@ -6,6 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class AppProperties {
 
     private final Documents documents = new Documents();
+    private final Contents contents = new Contents();
     private final Rag rag = new Rag();
     private final Ai ai = new Ai();
     private final Ingest ingest = new Ingest();
@@ -14,6 +15,10 @@ public class AppProperties {
 
     public Documents getDocuments() {
         return documents;
+    }
+
+    public Contents getContents() {
+        return contents;
     }
 
     public Rag getRag() {
@@ -42,6 +47,18 @@ public class AppProperties {
 
     public static class Documents {
         private String path = "data/documents";
+
+        public String getPath() {
+            return path;
+        }
+
+        public void setPath(String path) {
+            this.path = path;
+        }
+    }
+
+    public static class Contents {
+        private String path = "data/contents/contents.json";
 
         public String getPath() {
             return path;

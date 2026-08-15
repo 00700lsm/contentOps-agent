@@ -44,13 +44,13 @@ evaluation/
 ```text
 Current Phase
 
-Phase 1
-Baseline Vector RAG 구현
+Phase 7
+Content Data Tool 구현
 ```
 
-현재 목표는 완성된 ContentOps Agent를 만드는 것이 아니다.
+Question API는 여전히 운영 문서 Vector RAG다.
 
-가장 단순한 운영 문서 기반 Vector RAG를 구현하여 이후 Evaluation의 기준점이 되는 Baseline을 확보한다.
+콘텐츠 조회는 명시적 Tool로 분리되어 있다. LLM Tool Selection과 Agent Workflow는 아직 Question API에 연결하지 않는다.
 
 현재 시스템 구조는 다음과 같다.
 
@@ -81,6 +81,13 @@ Context Builder
 LLM
  ↓
 Answer + Sources
+
+
+Sample Contents JSON
+          ↓
+     contents 테이블
+          ↓
+search_contents / get_content_detail
 ```
 
 ---
@@ -104,9 +111,7 @@ Query Rewrite
 
 Multi Query
 
-Content DB Tool
-
-Tool Calling
+Tool Calling in Question API
 
 Agent Workflow
 
@@ -515,8 +520,6 @@ reranker/
 
 agent/
 
-tools/
-
 langgraph/
 ```
 
@@ -549,6 +552,11 @@ com.contentopsagent
 │   ├── service
 │   ├── prompt
 │   └── model
+│
+├── content
+│   └── model
+│
+├── tool
 │
 ├── evaluation
 │   ├── runner
@@ -1660,25 +1668,77 @@ Phase 6 Human Gate에서 후보 B를 적용했다. 규칙은 `BaselinePrompt`와
 
 ---
 
-## 운영 문서 질문만 처리
+## 운영 문서 질문과 콘텐츠 Tool
 
-현재 시스템은 다음 질문을 처리하지 않는다.
+Question API는 다음 질문을 아직 Tool로 라우팅하지 않는다.
 
 ```text
 이번 달 공개 예정 콘텐츠 알려줘.
 
 콘텐츠 100번 상태 알려줘.
-
-콘텐츠 100번이 왜 공개되지 않아?
 ```
 
-Content Metadata Tool은 Phase 7 이후 추가한다.
+해당 조회는 아래 Tool로 가능하다. Question API 연결은 Phase 8에서 평가한다.
 
 ---
 
-## Agent 없음
+## Content 데이터
 
-현재 흐름은 항상 동일하다.
+Sample Content는 `data/contents/contents.json`이다.
+
+애플리케이션 시작 시 PostgreSQL `contents` 테이블에 다시 적재한다.
+
+필드:
+
+```text
+id
+title
+genre
+ageRating
+status
+releaseDate
+serviceRegion
+metadataStatus
+```
+
+검색은 명시적 조건만 받는다. LLM이 SQL을 실행하지 않는다.
+
+---
+
+## Tool
+
+```text
+search_policy_documents
+→ RetrievalService Vector Search
+
+search_contents
+→ 조건 기반 contents 조회
+
+get_content_detail
+→ id 기준 상세 조회
+```
+
+Agent Evaluation Dataset:
+
+```text
+evaluation/datasets/agent-tools.jsonl
+```
+
+유형:
+
+```text
+POLICY_ONLY
+CONTENT_SEARCH
+CONTENT_DETAIL
+```
+
+Multi Tool 조합은 아직 넣지 않는다.
+
+---
+
+## Agent Workflow 없음
+
+현재 질문 흐름은 항상 같다.
 
 ```text
 Question
@@ -1688,7 +1748,9 @@ Vector Retrieval
 LLM
 ```
 
-Tool Routing이나 Agent 판단은 존재하지 않는다.
+Tool은 호출 가능한 단위로만 존재한다.
+
+LangGraph / Multi-Agent는 없다.
 
 ---
 
@@ -1833,9 +1895,12 @@ Tool Routing이나 Agent 판단은 존재하지 않는다.
 
 [ ] Reranker 없음
 
-[ ] Content Tool 없음
+[ ] Content Tool 있음
+    search_policy_documents
+    search_contents
+    get_content_detail
 
-[ ] Agent 없음
+[ ] Agent Workflow 없음
 
 [ ] LangGraph 없음
 ```
