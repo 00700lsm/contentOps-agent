@@ -42,7 +42,15 @@ class EvaluationSummaryTest {
                 hit,
                 recall,
                 rr,
-                10
+                "답변",
+                List.of(),
+                1,
+                10,
+                20,
+                30,
+                null,
+                null,
+                hit ? "NEEDS_GENERATION_REVIEW" : "RETRIEVAL"
         );
     }
 }

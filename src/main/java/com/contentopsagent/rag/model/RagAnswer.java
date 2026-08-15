@@ -5,6 +5,8 @@ import java.util.List;
 public record RagAnswer(
         String answer,
         List<AnswerSource> sources,
-        long llmLatencyMs
+        long llmLatencyMs,
+        Long promptTokens,
+        Long completionTokens
 ) {
 }

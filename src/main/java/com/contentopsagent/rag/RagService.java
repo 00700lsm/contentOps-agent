@@ -57,8 +57,23 @@ public class RagService {
 
         String answer = extractAnswer(response);
         List<AnswerSource> sources = sourcesFromChunks(chunks);
-        log.info("generation sourceCount={} llmLatencyMs={} answerLength={}", sources.size(), llmLatencyMs, answer.length());
-        return new RagAnswer(answer, sources, llmLatencyMs);
+        Long promptTokens = null;
+        Long completionTokens = null;
+        if (response.getMetadata() != null && response.getMetadata().getUsage() != null) {
+            Integer promptTokenCount = response.getMetadata().getUsage().getPromptTokens();
+            Integer completionTokenCount = response.getMetadata().getUsage().getCompletionTokens();
+            promptTokens = promptTokenCount == null ? null : promptTokenCount.longValue();
+            completionTokens = completionTokenCount == null ? null : completionTokenCount.longValue();
+        }
+        log.info(
+                "generation sourceCount={} llmLatencyMs={} answerLength={} promptTokens={} completionTokens={}",
+                sources.size(),
+                llmLatencyMs,
+                answer.length(),
+                promptTokens,
+                completionTokens
+        );
+        return new RagAnswer(answer, sources, llmLatencyMs, promptTokens, completionTokens);
     }
 
     private String extractAnswer(ChatResponse response) {

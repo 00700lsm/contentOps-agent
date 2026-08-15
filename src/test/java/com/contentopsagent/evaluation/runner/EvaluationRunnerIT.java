@@ -61,6 +61,8 @@ class EvaluationRunnerIT {
         assertThat(result.queries()).allSatisfy(query -> {
             assertThat(query.actualTopK()).isNotNull();
             assertThat(query.retrievalLatencyMs()).isGreaterThanOrEqualTo(0);
+            assertThat(query.answer()).isNotBlank();
+            assertThat(query.primaryFailureType()).isNotBlank();
         });
         assertThat(result.queries())
                 .filteredOn(query -> "NO_ANSWER".equals(query.category()))

@@ -3,11 +3,14 @@ package com.contentopsagent.evaluation.runner;
 import com.contentopsagent.common.config.AppProperties;
 import com.contentopsagent.evaluation.dataset.EvaluationDatasetLoader;
 import com.contentopsagent.evaluation.dataset.EvaluationQuery;
+import com.contentopsagent.evaluation.metric.FailureClassifier;
 import com.contentopsagent.evaluation.metric.RetrievalMetrics;
 import com.contentopsagent.evaluation.result.ActualHit;
 import com.contentopsagent.evaluation.result.EvaluationResult;
 import com.contentopsagent.evaluation.result.EvaluationSummary;
 import com.contentopsagent.evaluation.result.QueryEvaluationResult;
+import com.contentopsagent.rag.RagService;
+import com.contentopsagent.rag.model.RagAnswer;
 import com.contentopsagent.retrieval.RetrievalService;
 import com.contentopsagent.retrieval.model.RetrievalResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,6 +24,7 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -35,17 +39,20 @@ public class EvaluationRunner {
     private final AppProperties properties;
     private final EvaluationDatasetLoader datasetLoader;
     private final RetrievalService retrievalService;
+    private final RagService ragService;
     private final ObjectMapper objectMapper;
 
     public EvaluationRunner(
             AppProperties properties,
             EvaluationDatasetLoader datasetLoader,
             RetrievalService retrievalService,
+            RagService ragService,
             ObjectMapper objectMapper
     ) {
         this.properties = properties;
         this.datasetLoader = datasetLoader;
         this.retrievalService = retrievalService;
+        this.ragService = ragService;
         this.objectMapper = objectMapper.copy()
                 .registerModule(new JavaTimeModule())
                 .enable(SerializationFeature.INDENT_OUTPUT)
@@ -75,23 +82,41 @@ public class EvaluationRunner {
         );
         Path output = write(result);
         log.info(
-                "evaluation complete queries={} scored={} hitRate@K={} recall@K={} mrr={} output={}",
+                "evaluation complete queries={} scored={} hitRate@K={} recall@K={} mrr={} avgRetrievalMs={} avgLlmMs={} output={}",
                 result.metrics().queryCount(),
                 result.metrics().scoredQueryCount(),
                 result.metrics().hitRateAtK(),
                 result.metrics().recallAtK(),
                 result.metrics().mrr(),
+                result.metrics().avgRetrievalLatencyMs(),
+                result.metrics().avgLlmLatencyMs(),
                 output.toAbsolutePath()
         );
         return result;
     }
 
     private QueryEvaluationResult evaluate(EvaluationQuery query) {
+        long started = System.nanoTime();
         RetrievalResult retrieval = retrievalService.search(query.question());
+        RagAnswer generated = ragService.generate(query.question(), retrieval.chunks());
+        long endToEndLatencyMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - started);
+
         List<String> actualDocuments = retrieval.chunks().stream()
                 .map(chunk -> chunk.documentName())
                 .toList();
         int rank = RetrievalMetrics.firstExpectedRank(query.expectedDocuments(), actualDocuments);
+        Integer expectedRank = rank > 0 ? rank : null;
+        boolean hit = RetrievalMetrics.hit(query.expectedDocuments(), actualDocuments);
+        List<String> sources = generated.sources().stream()
+                .map(source -> source.document() + " / " + source.section())
+                .toList();
+        String failureType = FailureClassifier.classify(
+                query.answerable(),
+                hit,
+                expectedRank,
+                generated.answer()
+        );
+
         return new QueryEvaluationResult(
                 query.id(),
                 query.category(),
@@ -107,11 +132,19 @@ public class EvaluationRunner {
                                 chunk.similarityScore()
                         ))
                         .toList(),
-                rank > 0 ? rank : null,
-                RetrievalMetrics.hit(query.expectedDocuments(), actualDocuments),
+                expectedRank,
+                hit,
                 RetrievalMetrics.recall(query.expectedDocuments(), actualDocuments),
                 RetrievalMetrics.reciprocalRank(query.expectedDocuments(), actualDocuments),
-                retrieval.retrievalLatencyMs()
+                generated.answer(),
+                sources,
+                retrieval.embeddingLatencyMs(),
+                retrieval.retrievalLatencyMs(),
+                generated.llmLatencyMs(),
+                endToEndLatencyMs,
+                generated.promptTokens(),
+                generated.completionTokens(),
+                failureType
         );
     }
 

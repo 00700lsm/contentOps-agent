@@ -13,6 +13,14 @@ public record QueryEvaluationResult(
         boolean hit,
         double recall,
         double reciprocalRank,
-        long retrievalLatencyMs
+        String answer,
+        List<String> sources,
+        long embeddingLatencyMs,
+        long retrievalLatencyMs,
+        long llmLatencyMs,
+        long endToEndLatencyMs,
+        Long promptTokens,
+        Long completionTokens,
+        String primaryFailureType
 ) {
 }
